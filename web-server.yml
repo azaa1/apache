@@ -1,0 +1,69 @@
+---
+  - name: Install Apache on CentOS6, CentOS7, Fedora and Ubuntu and Sort by OS
+    hosts: all
+    tasks:
+      - name: Install web-server on CentOS6 and CentOS7
+        when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "6"
+        yum:
+          name: httpd
+          state: latest
+
+      - name: Install web-server on Fedora
+        when: ansible_distribution == "Fedora" and ansible_distribution_major_version == "28"
+        dnf:
+          name: httpd
+          state: present
+
+
+      - name: Create index.html
+        when: ( ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" ) or
+              ( ansible_distribution == "CentOS" and ansible_distribution_major_version == "7" ) or
+              ( ansible_distribution == "Fedora" and ansible_distribution_major_version == "28")
+        copy:
+          dest: /var/www/html/index.html
+          content: "Hello World"
+
+
+      - name: Start web-server on CentOS6 or Fedora
+        when: ( ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" ) or
+              ( ansible_distribution == "Fedora" and ansible_distribution_major_version == "28" )
+        service:
+          name: httpd
+          state: started
+
+
+      - name: Start Webserver on CentOS7
+        when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+        systemd:
+          name: httpd
+          state: started
+          enabled: yes
+
+
+      - name: Install web-server on Ubuntu
+        when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+        apt:
+          name: apache2
+          state: latest
+
+
+      - name: Create pulic_html
+        when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+        copy:
+          dest: /var/www/html/public_html
+          content: "Hello World"
+
+
+      - name: Configure Firewall on Ubuntu
+        when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+        command: "ufw allow 'Apache Full'"
+  
+      - name: Start Apache service on Ubuntu
+        when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+        systemd:
+          name: apache2
+          state: started
+          enabled: yes
+
+
+
